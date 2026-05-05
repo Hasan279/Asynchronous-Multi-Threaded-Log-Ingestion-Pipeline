@@ -98,6 +98,12 @@ Total Consumed : 38
 
 ---
 
-## Authors
+## Developers
 
-- [Hasan Waseem](https://github.com/hasanwaseem)
+| Name | GitHub |
+|------|--------|
+| HasanWaseem | [@HasanWaseem](https://github.com/Hasan279) |
+| AnasKhan | [@AnasKhan](https://github.com/AnasKhan-1) |
+| AreebSaeed | [@AreebSaeed](https://github.com/AreebSaeed) |
+
+---
