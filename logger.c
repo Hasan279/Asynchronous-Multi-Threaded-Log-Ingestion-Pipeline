@@ -8,7 +8,10 @@ int total_consumed = 0;
 
 static double get_time() {
     static time_t start = 0;
-    if (start == 0) start = time(NULL);
+    if (start == 0)
+    {
+        start = time(NULL);
+    }
     return difftime(time(NULL), start);
 }
 

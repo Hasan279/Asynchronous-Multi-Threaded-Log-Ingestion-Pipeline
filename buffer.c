@@ -2,7 +2,6 @@
 #include <pthread.h>
 #include "buffer.h"
 
-// separate mutex just for printing so log + buffer always print together
 static pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int buffer[BUFFER_SIZE];
@@ -13,52 +12,64 @@ pthread_mutex_t mutex;
 sem_t empty_slots;
 sem_t full_slots;
 
-void init_buffer() {
-    // fill buffer with -1 to show empty slots
+void init_buffer(void)
+{
     for (int i = 0; i < BUFFER_SIZE; i++)
-        buffer[i] = -1;
+    {
+        buffer[i] = BUFFER_EMPTY;
+    }
 
     pthread_mutex_init(&mutex, NULL);
-    sem_init(&empty_slots, 0, BUFFER_SIZE);  // all slots empty at start
-    sem_init(&full_slots, 0, 0);             // no full slots at start
+    sem_init(&empty_slots, 0, BUFFER_SIZE);
+    sem_init(&full_slots, 0, 0);
 }
 
-void insert_item(int item) {
-    sem_wait(&empty_slots);        // wait if buffer is full
+void insert_item(int item)
+{
+    sem_wait(&empty_slots);
     pthread_mutex_lock(&mutex);
 
     buffer[in] = item;
-    in = (in + 1) % BUFFER_SIZE;  // circular buffer
+    in = (in + 1) % BUFFER_SIZE;
 
     pthread_mutex_unlock(&mutex);
-    sem_post(&full_slots);         // signal that a new item is ready
+    sem_post(&full_slots);
 }
 
-int remove_item() {
-    sem_wait(&full_slots);         // wait if buffer is empty
+int remove_item(void)
+{
+    sem_wait(&full_slots);
     pthread_mutex_lock(&mutex);
 
     int item = buffer[out];
-    buffer[out] = -1;
+    buffer[out] = BUFFER_EMPTY;
     out = (out + 1) % BUFFER_SIZE;
 
     pthread_mutex_unlock(&mutex);
-    sem_post(&empty_slots);        // signal that a slot is now free
+    sem_post(&empty_slots);
 
     return item;
 }
 
-// prints the log message and buffer state together in one locked block
-void log_and_print(const char *msg) {
+void log_and_print(const char *msg)
+{
     pthread_mutex_lock(&print_mutex);
     printf("%s", msg);
     printf("Buffer: [");
-    for (int i = 0; i < BUFFER_SIZE; i++) {
-        if (buffer[i] == -1)
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        if (buffer[i] == BUFFER_EMPTY)
+        {
             printf(" -");
+        }
         else
+        {
             printf("%2d", buffer[i]);
-        if (i < BUFFER_SIZE - 1) printf(" |");
+        }
+        if (i < BUFFER_SIZE - 1)
+        {
+            printf(" |");
+        }
     }
     printf(" ]\n");
     pthread_mutex_unlock(&print_mutex);

@@ -5,6 +5,9 @@
 #include <semaphore.h>
 
 #define BUFFER_SIZE 5
+#define BUFFER_EMPTY (-1)
+
+extern int running;
 
 extern int buffer[BUFFER_SIZE];
 extern int in;
@@ -14,9 +17,9 @@ extern pthread_mutex_t mutex;
 extern sem_t empty_slots;
 extern sem_t full_slots;
 
-void init_buffer();
+void init_buffer(void);
 void insert_item(int item);
-int remove_item();
+int remove_item(void);
 void log_and_print(const char *msg);
 
 #endif
