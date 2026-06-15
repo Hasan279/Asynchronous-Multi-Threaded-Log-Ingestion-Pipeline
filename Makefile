@@ -6,4 +6,4 @@ all:
 	$(CC) -o $(TARGET) $(SRCS) -lpthread
 
 clean:
-	rm -f *.h $(TARGET)
+	rm -f $(TARGET)

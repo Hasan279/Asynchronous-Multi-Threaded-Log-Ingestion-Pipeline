@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "buffer.h"
+#include "logger.h"
 
 static pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t operation_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int buffer[BUFFER_SIZE];
 int in = 0;
@@ -24,9 +28,17 @@ void init_buffer(void)
     sem_init(&full_slots, 0, 0);
 }
 
-void insert_item(int item)
+
+void produce_item(int producer_id)
 {
+    int item = rand() % 100;
+
     sem_wait(&empty_slots);
+    if (!running) {
+        sem_post(&empty_slots);
+        return;
+    }
+    pthread_mutex_lock(&operation_mutex);
     pthread_mutex_lock(&mutex);
 
     buffer[in] = item;
@@ -34,11 +46,20 @@ void insert_item(int item)
 
     pthread_mutex_unlock(&mutex);
     sem_post(&full_slots);
+
+    log_produced(producer_id, item);
+    sleep(1);
+    pthread_mutex_unlock(&operation_mutex);
 }
 
-int remove_item(void)
+void consume_item(int consumer_id)
 {
     sem_wait(&full_slots);
+    if (!running) {
+        sem_post(&full_slots);
+        return;
+    }
+    pthread_mutex_lock(&operation_mutex);
     pthread_mutex_lock(&mutex);
 
     int item = buffer[out];
@@ -48,7 +69,9 @@ int remove_item(void)
     pthread_mutex_unlock(&mutex);
     sem_post(&empty_slots);
 
-    return item;
+    log_consumed(consumer_id, item);
+    sleep(1);
+    pthread_mutex_unlock(&operation_mutex);
 }
 
 void log_and_print(const char *msg)
