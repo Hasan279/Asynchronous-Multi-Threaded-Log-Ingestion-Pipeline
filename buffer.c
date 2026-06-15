@@ -28,7 +28,6 @@ void init_buffer(void)
     sem_init(&full_slots, 0, 0);
 }
 
-
 void produce_item(int producer_id)
 {
     int item = rand() % 100;
